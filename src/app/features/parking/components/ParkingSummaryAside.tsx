@@ -6,6 +6,8 @@ import StreetView from '@/shared/components/StreetView'
 import { formatCurrency } from '@/shared/utils/money'
 import Portal from '@/shared/components/Portal'
 import { useAppStore } from '@/app/store/store'
+import OwnerInfo from './OwnerInfo'
+import ParkingRating from './ParkingRating'
 
 const ParkingSummaryAside: FC<Props> = ({ parking, onClose, onClickDetail, onClickReserve }) => {
   const [uiParking, setUiParking] = useState<Nullable<Parking>>(parking)
@@ -59,10 +61,40 @@ const ParkingSummaryAside: FC<Props> = ({ parking, onClose, onClickDetail, onCli
               />
             </div>
             <div className="px-6 py-5 h-full flex flex-col">
-              <h2 className="text-2xl font-bold text-900 mb-3">
-                {uiParking.location.address} {uiParking.location.numDirection},{' '}
-                {uiParking.location.street}
-              </h2>
+              <div className="flex justify-between items-start mb-3">
+                <h2 className="text-2xl font-bold text-900">
+                  {uiParking.location.address} {uiParking.location.numDirection},{' '}
+                  {uiParking.location.street}
+                </h2>
+                <OwnerInfo 
+                  userInfo={uiParking.userInfo} 
+                  size="medium" 
+                  showName={false}
+                  showBadges={true}
+                />
+              </div>
+              
+              {/* Información del propietario */}
+              <div className="mb-3">
+                <OwnerInfo 
+                  userInfo={uiParking.userInfo} 
+                  size="medium" 
+                  layout="vertical"
+                  showName={true}
+                  showBadges={false}
+                />
+              </div>
+
+              {/* Calificaciones */}
+              <div className="mb-4">
+                <ParkingRating 
+                  averageRating={uiParking.averageRating}
+                  reviewCount={uiParking.reviewCount}
+                  size="medium"
+                  showCount={true}
+                />
+              </div>
+              
               <p className="text-sm text-700 mb-3">{uiParking.description}</p>
 
               <div className="grid grid-cols-3 gap-4 text-center mt-6">

@@ -3,6 +3,8 @@ import { Parking } from '../model/parking'
 import { env } from '@/env'
 import { Button } from 'primereact/button'
 import { isPromise } from '@/shared/utils/promise'
+import OwnerInfo from './OwnerInfo'
+import ParkingRating from './ParkingRating'
 
 const ParkingCard: FC<Props> = ({ parking, onEdit, onDelete }) => {
   const { address, numDirection, latitude, longitude, city, street } = parking.location
@@ -33,15 +35,34 @@ const ParkingCard: FC<Props> = ({ parking, onEdit, onDelete }) => {
       </div>
 
       <div className="p-6 flex flex-col h-full">
-        <p className="font-bold text-sm">
-          {address} {numDirection}
-        </p>
-        <p className="text-sm font-medium">
-          {street}, {city}
-        </p>
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <p className="font-bold text-sm">
+              {address} {numDirection}
+            </p>
+            <p className="text-sm font-medium">
+              {street}, {city}
+            </p>
+          </div>
+          <OwnerInfo 
+            userInfo={parking.userInfo} 
+            size="small" 
+            showName={false}
+            showBadges={true}
+          />
+        </div>
 
-        {/* <p className=''></p> */}
         <div className="mt-2 text-sm line-clamp-2">{parking.description}</div>
+
+        {/* Calificaciones */}
+        <div className="mt-3">
+          <ParkingRating 
+            averageRating={parking.averageRating}
+            reviewCount={parking.reviewCount}
+            size="small"
+            showCount={true}
+          />
+        </div>
 
         <div className="flex gap-2 mt-auto pt-4">
           <Button
