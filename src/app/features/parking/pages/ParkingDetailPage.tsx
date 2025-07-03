@@ -3,10 +3,12 @@ import { useParkingDetail } from '../hooks/useParkingDetail'
 import { useNavigate, useParams } from 'react-router'
 import StreetView from '@/shared/components/StreetView'
 import { Button } from 'primereact/button'
-// import { formatDate } from '@/shared/utils/date'
 import Markdown from 'react-markdown'
 import { formatCurrency } from '@/shared/utils/money'
 import { useAppStore } from '@/app/store/store'
+import ParkingRating from '../components/ParkingRating'
+import OwnerInfo from '../components/OwnerInfo'
+import ReviewsSection from '../components/ReviewsSection'
 
 const ParkingDetailPage = () => {
   const { id } = useParams()
@@ -40,7 +42,9 @@ const ParkingDetailPage = () => {
             />
             <h1 className="text-xl">Detalle de garaje</h1>
           </div>
-          <div className="relative rounded-lg overflow-hidden">
+          
+          {/* Hero Section con StreetView prominente */}
+          <div className="relative rounded-lg overflow-hidden mb-4">
             <StreetView
               className="w-full h-96 "
               lat={+parking.location.latitude}
@@ -61,55 +65,114 @@ const ParkingDetailPage = () => {
             </div>
           </div>
 
-          <div className="max-w-5xl mx-auto mt-8">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-8">
-                <div>
-                  <h3 className="text-gray-800 text-lg font-medium">Acerca del servicio</h3>
-                  <div className="mt-4">
-                    <div className="flex gap-8">
-                      <div>
-                        <i className="pi pi-home text-3xl mx-auto !block w-fit mb-2"></i>
-                        <p className="text-sm font-medium">Dimensiones</p>
-                        <ul className="text-sm">
-                          <li>Largo: {parking.length}m</li>
-                          <li>Ancho: {parking.width}m</li>
-                          <li>Alto: {parking.height}m</li>
-                        </ul>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Columna principal */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Información básica del garaje */}
+                <div className="bg-white rounded-lg border p-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                    Información del garaje
+                  </h2>
+
+                  {/* Características */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="text-center">
+                      <i className="pi pi-home text-3xl text-blue-500 mb-2 block"></i>
+                      <p className="text-sm font-medium text-gray-800">Dimensiones</p>
+                      <div className="text-sm text-gray-600 mt-1">
+                        <p>{parking.length}m × {parking.width}m × {parking.height}m</p>
                       </div>
-                      <div>
-                        <i className="pi pi-car text-3xl mx-auto !block w-fit mb-2"></i>
-                        <p className="text-sm font-medium">Espacios en total</p>
-                        <p className="text-sm">Hasta {parking.space} vehículos</p>
-                      </div>
-                      <div>
-                        <i className="pi pi-dollar text-3xl mx-auto !block w-fit mb-2"></i>
-                        <p className="text-sm font-medium">Tarifa/Hora</p>
-                        <p className="text-sm">{formatCurrency(parking.price)} </p>
-                      </div>
+                    </div>
+                    <div className="text-center">
+                      <i className="pi pi-car text-3xl text-green-500 mb-2 block"></i>
+                      <p className="text-sm font-medium text-gray-800">Capacidad</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {parking.space} {parking.space === 1 ? 'vehículo' : 'vehículos'}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <i className="pi pi-dollar text-3xl text-yellow-500 mb-2 block"></i>
+                      <p className="text-sm font-medium text-gray-800">Precio por Hora</p>
+                      <p className="text-lg font-semibold text-gray-800 mt-1">
+                        {formatCurrency(parking.price)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Descripción */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Descripción
+                    </h3>
+                    <div className="text-gray-700 prose prose-sm max-w-none">
+                      <Markdown>{parking.description}</Markdown>
                     </div>
                   </div>
                 </div>
+
+                {/* Sistema completo de reseñas */}
+                <ReviewsSection parkingId={parking.id} />
               </div>
-              <div>
-                <div>
-                  <h3 className="text-gray-800 text-lg font-medium">Descripción del garaje</h3>
-                  <div className="mt-1 text-sm">
-                    <Markdown>{parking.description}</Markdown>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Información del propietario */}
+                <div className="bg-white rounded-lg border p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Propietario
+                  </h3>
+                  <OwnerInfo 
+                    userInfo={parking.userInfo}
+                    size="medium"
+                    layout="vertical"
+                    showName={true}
+                    showBadges={true}
+                  />
+                </div>
+
+                {/* Botón de reserva */}
+                <div className="bg-white rounded-lg border p-6">
+                  <div className="text-center">
+                    <div className="mb-4">
+                      <p className="text-2xl font-bold text-gray-800">
+                        {formatCurrency(parking.price)}
+                      </p>
+                      <p className="text-sm text-gray-600">por hora</p>
+                    </div>
+                    
+                    <Button
+                      onClick={handleGoToReservation}
+                      disabled={isOwner}
+                      label={isOwner ? 'De tu propiedad' : 'Reservar ahora'}
+                      icon="pi pi-check"
+                      iconPos="right"
+                      severity={isOwner ? 'contrast' : 'success'}
+                      className="w-full"
+                      size="large"
+                    />
+
+                    {!isOwner && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        No se realizará el cobro hasta confirmar
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex justify-end mt-8">
-              <Button
-                onClick={handleGoToReservation}
-                disabled={isOwner}
-                label={isOwner ? 'De tu propiedad' : 'Reservar'}
-                icon="pi pi-check"
-                iconPos="right"
-                severity={isOwner ? 'contrast' : 'success'}
-              />
+                {/* Información de contacto */}
+                {parking.phone && (
+                  <div className="bg-white rounded-lg border p-6">
+                    <h4 className="font-semibold text-gray-800 mb-3">
+                      Contacto
+                    </h4>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <i className="pi pi-phone" />
+                      <span>{parking.phone}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </>
