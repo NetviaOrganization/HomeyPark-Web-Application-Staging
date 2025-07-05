@@ -4,4 +4,5 @@ export interface Profile {
   lastName: string
   birthDate: string
   userId: number
+  verifiedEmail: boolean
 }

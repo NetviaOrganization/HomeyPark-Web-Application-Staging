@@ -38,6 +38,16 @@ class ProfileService extends BaseService {
       throw error
     }
   }
+
+  public async setUserVerified(userId: string | number) {
+    try {
+      const response = await this.http.put(`${this.baseUrl}/api/v1/users/verify-email`, { userId })
+      return response.data
+    } catch (error) {
+      console.error('Error setting user verified status:', error)
+      throw error
+    }
+  }
 }
 
 export default ProfileService

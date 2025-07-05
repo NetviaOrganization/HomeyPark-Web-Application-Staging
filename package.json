@@ -11,6 +11,7 @@
     "dev:prod": "vite --mode production"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@google-recaptcha/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.0",
     "@tailwindcss/postcss": "^4.1.4",
