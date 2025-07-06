@@ -92,6 +92,10 @@ const ReservationParkingPage = () => {
       }
       console.log('Reservation DTO:', dto)
 
+      if ((totalReservations % 10) - 1 === 9) {
+        await reservationService.activateDiscountForNext(profileId!)
+      }
+
       const response = await reservationService.createReservation(dto, fileRef.current)
 
       console.log('Reservation uploaded successfully:', response)

@@ -54,6 +54,12 @@ class ReservationService extends BaseService<Reservation> {
   async completeReservation(id: number) {
     await this.changeReservationStatus(id, 'Completed')
   }
+
+  async activateDiscountForNext(userId: string | number) {
+    const response = await this.http.put(`/api/v1/users/${userId}/activate-discount`)
+    console.log('Discount activated for user:', response.data)
+    return response.data
+  }
 }
 
 export default ReservationService
