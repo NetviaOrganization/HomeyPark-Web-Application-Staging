@@ -17,6 +17,7 @@ import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
 import ReservationService from '../../reservations/services/reservationService'
 import { useAuthState } from '@/shared/hooks/useAuth'
+import { formatDate } from '@/shared/utils/date'
 
 const DEFAULT_LOCATION = {
   latitude: -12.092446,
@@ -39,6 +40,14 @@ const FindYourParkPage = () => {
       profileId ? reservationService.getReservationsByGuestId(profileId) : Promise.resolve([]),
     [profileId]
   )
+  const [recentReservations, setRecentReservations] = useState<any[]>([])
+
+  useEffect(() => {
+    const localData = localStorage.getItem('recent_reservations')
+    if (localData) {
+      setRecentReservations(JSON.parse(localData))
+    }
+  }, [])
 
   // toggles filters on/off
   const [filtersEnabled, setFiltersEnabled] = useState<boolean>(false)
@@ -107,6 +116,28 @@ const FindYourParkPage = () => {
       {/* Buscador siempre visible (top-left) */}
       <div className="absolute top-6 left-6 z-30 w-80">
         <AutocompleteAddress onChangedPlace={handlePlaceChange} />
+
+        {recentReservations.length > 0 && (
+          <div className="mt-4 bg-white p-4 rounded-md shadow-md w-96">
+            <h3 className="font-semibold text-lg mb-2">Tus últimas reservas</h3>
+            <ul className="space-y-2 text-sm">
+              {recentReservations.map((r, i) => (
+                <li
+                  key={i}
+                  onClick={() => {
+                    localStorage.setItem('reservation_prefill', JSON.stringify(r))
+                    navigate(`/checkout/${r.parkingId}`)
+                  }}
+                  className="border-b pb-2 last:border-0 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                >
+                  <div className="font-semibold">{r.street}</div>
+                  <div>{formatDate(r.date)}</div>
+                  <div className="text-green-600 font-medium">${r.total.toFixed(2)}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Botón toggle filtros (solo ícono), top-right */}

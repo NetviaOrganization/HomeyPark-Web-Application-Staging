@@ -54,6 +54,13 @@ const ReservationParkingPage = () => {
     return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
   }
 
+  const saveToLocalStorage = (reservation: any) => {
+    const key = 'recent_reservations'
+    const existing = JSON.parse(localStorage.getItem(key) || '[]')
+    const updated = [reservation, ...existing].slice(0, 5)
+    localStorage.setItem(key, JSON.stringify(updated))
+  }
+
   useEffect(() => {
     const fetchParking = async () => {
       try {
@@ -66,6 +73,33 @@ const ReservationParkingPage = () => {
 
     fetchParking()
   }, [parkingId])
+
+  useEffect(() => {
+    if (!parkingId || !vehicles.length) return
+
+    const raw = localStorage.getItem('reservation_prefill')
+    if (raw) {
+      try {
+        const prefill = JSON.parse(raw)
+
+        if (prefill.parkingId?.toString() !== parkingId) return
+
+        if (prefill.date) setDate(new Date(prefill.date))
+        if (prefill.startTime) setStartTime(new Date(prefill.startTime))
+        if (prefill.endTime) setEndTime(new Date(prefill.endTime))
+
+        if (vehicles && prefill.vehicleId) {
+          const found = vehicles.find((v) => v.id === prefill.vehicleId)
+          if (found) setSelectedVehicle(found)
+        }
+
+        // Limpia solo si todo está ok
+        localStorage.removeItem('reservation_prefill')
+      } catch (e) {
+        console.warn('Error leyendo prefill:', e)
+      }
+    }
+  }, [parkingId, vehicles])
 
   const handleReserve = async () => {
     if (!fileRef.current || !selectedVehicle || !date || !startTime || !endTime) return
@@ -100,6 +134,15 @@ const ReservationParkingPage = () => {
 
       console.log('Reservation uploaded successfully:', response)
 
+      saveToLocalStorage({
+        parkingId: parking!.id,
+        street: `${parking?.location.address} ${parking?.location.numDirection}`,
+        date: date?.toISOString(),
+        startTime: startTime?.toISOString(),
+        endTime: endTime?.toISOString(),
+        vehicleId: selectedVehicle.id,
+        total: hoursRegistered * (parking!.price * (applyDiscount ? 0.8 : 1)),
+      })
       navigate('/find-your-parking')
     } catch (err) {
       console.error('Error uploading reservation:', err)
