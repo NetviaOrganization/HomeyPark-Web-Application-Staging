@@ -13,6 +13,10 @@ import { Rating } from 'primereact/rating'
 import { Checkbox } from 'primereact/checkbox'
 import { Button } from 'primereact/button'
 import { useEffect, useState, useMemo } from 'react'
+import { ProgressBar } from 'primereact/progressbar'
+import { Tooltip } from 'primereact/tooltip'
+import { useOwnerProfile } from '../hooks/useOwnerProfile'
+import ReservationService from '../../reservations/services/reservationService'
 
 const DEFAULT_LOCATION = {
   latitude: -12.092446,
@@ -20,6 +24,7 @@ const DEFAULT_LOCATION = {
 }
 
 const parkingService = new ParkingService()
+const reservationService = new ReservationService()
 const MAP_ID = 'find-park-map'
 
 const FindYourParkPage = () => {
@@ -28,6 +33,12 @@ const FindYourParkPage = () => {
   const map = useMap(MAP_ID)
   const { data: parkingList, loading: parkingLoading } = usePromise(() => parkingService.getAll())
   const [selectedParking, setSelectedParking] = useState<Nullable<Parking>>(null)
+  const { profile } = useOwnerProfile()
+  const { data: reservations } = usePromise(
+    () =>
+      profile?.id ? reservationService.getReservationsByHostId(profile.id) : Promise.resolve([]),
+    [profile?.id]
+  )
 
   // toggles filters on/off
   const [filtersEnabled, setFiltersEnabled] = useState<boolean>(false)
@@ -99,7 +110,20 @@ const FindYourParkPage = () => {
       </div>
 
       {/* Botón toggle filtros (solo ícono), top-right */}
-      <div className="absolute top-6 right-6 z-30">
+
+      <div className="absolute top-6 right-6 z-30 flex gap-4 items-center">
+        <div className="rounded-sm bg-white p-4 shadow-md flex items-center gap-2">
+          <ProgressBar
+            id="discount-progressbar"
+            value={reservations ? (reservations.length % 10) * 10 : 0}
+            showValue
+            className="w-32 h-3"
+            data-pr-tooltip="Al llegar a 10 reservas, recibirás un descuento"
+          />
+
+          {/* Inicializamos el Tooltip apuntando al ProgressBar */}
+          <Tooltip target="#discount-progressbar" position="top" mouseTrack mouseTrackLeft={10} />
+        </div>
         <Button
           icon="pi pi-filter"
           className={filtersEnabled ? 'p-button-success' : 'p-button-secondary'}
