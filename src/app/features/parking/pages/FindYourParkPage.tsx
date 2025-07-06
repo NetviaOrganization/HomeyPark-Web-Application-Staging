@@ -15,8 +15,8 @@ import { Button } from 'primereact/button'
 import { useEffect, useState, useMemo } from 'react'
 import { ProgressBar } from 'primereact/progressbar'
 import { Tooltip } from 'primereact/tooltip'
-import { useOwnerProfile } from '../hooks/useOwnerProfile'
 import ReservationService from '../../reservations/services/reservationService'
+import { useAuthState } from '@/shared/hooks/useAuth'
 
 const DEFAULT_LOCATION = {
   latitude: -12.092446,
@@ -33,11 +33,11 @@ const FindYourParkPage = () => {
   const map = useMap(MAP_ID)
   const { data: parkingList, loading: parkingLoading } = usePromise(() => parkingService.getAll())
   const [selectedParking, setSelectedParking] = useState<Nullable<Parking>>(null)
-  const { profile } = useOwnerProfile()
+  const { profileId } = useAuthState()
   const { data: reservations } = usePromise(
     () =>
-      profile?.id ? reservationService.getReservationsByHostId(profile.id) : Promise.resolve([]),
-    [profile?.id]
+      profileId ? reservationService.getReservationsByGuestId(profileId) : Promise.resolve([]),
+    [profileId]
   )
 
   // toggles filters on/off
