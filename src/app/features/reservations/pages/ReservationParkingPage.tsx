@@ -4,7 +4,7 @@ import { Calendar } from 'primereact/calendar'
 import { Card } from 'primereact/card'
 import { Nullable } from 'primereact/ts-helpers'
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { Parking } from '../../parking/model/parking'
 import ReservationService from '../services/reservationService'
 import ParkingService from '../../parking/services/parkingService'
@@ -14,6 +14,7 @@ import { Vehicle } from '../../vehicles/model/vehicle'
 import { FileUpload } from 'primereact/fileupload'
 import { Button } from 'primereact/button'
 import { useAuthState } from '@/shared/hooks/useAuth'
+import { usePromise } from '@/shared/hooks/usePromise'
 
 const reservationService = new ReservationService()
 const parkingService = new ParkingService()
@@ -30,6 +31,21 @@ const ReservationParkingPage = () => {
   const [date, setDate] = useState<Nullable<Date>>(null)
   const [startTime, setStartTime] = useState<Nullable<Date>>(null)
   const [endTime, setEndTime] = useState<Nullable<Date>>(null)
+  const navigate = useNavigate()
+
+  const { data: reservations } = usePromise(
+    () =>
+      profileId ? reservationService.getReservationsByGuestId(profileId) : Promise.resolve([]),
+    [profileId]
+  )
+
+  const totalReservations = reservations ? reservations.length : 0
+
+  const applyDiscount = totalReservations % 10 === 0 && totalReservations > 0
+  const hoursRegistered =
+    startTime && endTime
+      ? Math.ceil((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60))
+      : 0
 
   const toLocalTimSTring = (date: Date) => {
     const d = date instanceof Date ? date : new Date(date)
@@ -70,13 +86,17 @@ const ReservationParkingPage = () => {
         parkingId: parking!.id,
         vehicleId: +selectedVehicle.id,
         reservationDate: date.toISOString().split('T')[0],
-        totalFare: parking?.price ? hoursRegistered * parking.price : 0,
+        totalFare: parking?.price
+          ? hoursRegistered * (parking.price * (applyDiscount ? 0.8 : 1))
+          : 0,
       }
       console.log('Reservation DTO:', dto)
 
       const response = await reservationService.createReservation(dto, fileRef.current)
 
       console.log('Reservation uploaded successfully:', response)
+
+      navigate('/find-your-parking')
     } catch (err) {
       console.error('Error uploading reservation:', err)
     }
@@ -86,100 +106,123 @@ const ReservationParkingPage = () => {
     <BasePage>
       <Title>Checkout</Title>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="mt-8 flex flex-col gap-4">
-          <Card
-            className="shadow-md"
-            header={
-              <div className="px-6 py-4 border-b border-gray-200">
-                <Title level="h4">Horario</Title>
-              </div>
-            }
-          >
-            <div className="flex gap-3">
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-semibold">Fecha de reserva</label>
-                <Calendar value={date} onChange={(e) => setDate(e.value)} />
-              </div>
-              <div className="flex gap-3 w-full">
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-semibold">Hora de inicio</label>
-                  <Calendar value={startTime} onChange={(e) => setStartTime(e.value)} timeOnly />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-semibold">Hora de cierre</label>
-                  <Calendar
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.value)}
-                    timeOnly
-                    minDate={startTime ? new Date(startTime.getTime() + 30 * 60 * 1000) : undefined}
-                  />
-                </div>
-              </div>
+      {/* Layout: form en dos columnas en md+ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        {/* Columna Izquierda: Horario */}
+        <Card className="shadow-md rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <Title level="h4">Horario</Title>
+          </div>
+          <div className="px-6 py-4 flex flex-col gap-4">
+            <Calendar
+              value={date}
+              onChange={(e) => setDate(e.value)}
+              placeholder="Fecha de reserva"
+              showIcon
+              className="w-full"
+              dateFormat="yy-mm-dd"
+            />
+
+            <div className="flex gap-4">
+              <Calendar
+                value={startTime}
+                onChange={(e) => setStartTime(e.value)}
+                timeOnly
+                placeholder="Hora inicio"
+                showIcon
+                className="w-1/2"
+              />
+              <Calendar
+                value={endTime}
+                onChange={(e) => setEndTime(e.value)}
+                timeOnly
+                placeholder="Hora fin"
+                showIcon
+                className="w-1/2"
+                minDate={startTime ? new Date(startTime.getTime() + 30 * 60000) : undefined}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Columna Derecha: Vehículo y Comprobante */}
+        <div className="flex flex-col gap-6">
+          <Card className="shadow-md rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <Title level="h4">Vehículo</Title>
+            </div>
+            <div className="px-6 py-4">
+              <Dropdown
+                value={selectedVehicle}
+                options={vehicles}
+                optionLabel="licensePlate"
+                onChange={(e) => setSelectedVehicle(e.value)}
+                placeholder="Selecciona un vehículo"
+                className="w-full"
+                valueTemplate={(opt) =>
+                  opt ? (
+                    <span className="font-semibold">{opt.licensePlate}</span>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )
+                }
+                itemTemplate={(opt) => (
+                  <div className="flex justify-between">
+                    <span>{opt.licensePlate}</span>
+                    <small className="text-gray-500">
+                      {opt.brand} {opt.model}
+                    </small>
+                  </div>
+                )}
+              />
             </div>
           </Card>
 
-          <Card
-            className="shadow-md"
-            header={
-              <div className="px-6 py-4 border-b border-gray-200">
-                <Title level="h4">Vehículo</Title>
-              </div>
-            }
-          >
-            <Dropdown
-              value={selectedVehicle}
-              className="w-full h-12"
-              options={vehicles}
-              optionLabel="licensePlate"
-              onChange={(e) => setSelectedVehicle(e.value)}
-              valueTemplate={(option) => (
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{option?.licensePlate}</span>
-                  <span className="text-sm text-gray-500">
-                    {option?.brand} {option?.model}
-                  </span>
-                </div>
-              )}
-              itemTemplate={(option) => (
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{option.licensePlate}</span>
-                  <span className="text-sm text-gray-500">
-                    {option.brand} {option.model}
-                  </span>
-                </div>
-              )}
-            />
-          </Card>
-
-          <Card
-            className="shadow-md"
-            header={
-              <div className="px-6 py-4 border-b border-gray-200">
-                <Title level="h4">Comprobante</Title>
-              </div>
-            }
-          >
-            <FileUpload
-              mode="basic"
-              accept="image/*"
-              onSelect={(e) => {
-                const file: File = e.files[0]
-                console.log('File selected:', file)
-                fileRef.current = file
-              }}
-              onClear={() => {
-                console.log('File cleared')
-                fileRef.current = null
-              }}
-              // onUpload={onUpload}
-            />
+          <Card className="shadow-md rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <Title level="h4">Comprobante</Title>
+            </div>
+            <div className="px-6 py-4">
+              <FileUpload
+                mode="advanced"
+                accept="image/*"
+                maxFileSize={1000000}
+                chooseLabel="Elegir imagen"
+                customUpload
+                uploadHandler={() => {}}
+                onSelect={(e) => {
+                  fileRef.current = e.files[0]
+                }}
+                onClear={() => {
+                  fileRef.current = null
+                }}
+                emptyTemplate={<p className="m-0 text-gray-500">Arrastra o haz clic para subir</p>}
+              />
+            </div>
           </Card>
         </div>
       </div>
 
+      {/* Precio estimado */}
+      {/* Precio estimado */}
+      {date && startTime && endTime && parking && (
+        <div className="mt-4 px-6 py-4 bg-gray-50 border border-gray-200 rounded-md flex items-baseline gap-2">
+          <span className="font-semibold">Precio estimado:</span>
+          {/* Precio normal (tachado si hay descuento) */}
+          <span className={applyDiscount ? 'line-through text-gray-500' : 'font-semibold'}>
+            {(hoursRegistered * parking.price).toFixed(2)} USD
+          </span>
+          {/* Precio con descuento */}
+          {applyDiscount && (
+            <span className="font-semibold text-green-600">
+              {(hoursRegistered * parking.price * 0.8).toFixed(2)} USD
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex justify-end items-center mt-6 gap-4">
-        <Button label="Cancelar" severity="danger" />
+        <Button label="Cancelar" severity="danger" onClick={() => navigate(-1)} />
         <Button label="Reservar" onClick={handleReserve} />
       </div>
     </BasePage>
