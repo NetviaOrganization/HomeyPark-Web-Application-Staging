@@ -42,7 +42,7 @@ const ParkingDetailPage = () => {
             />
             <h1 className="text-xl">Detalle de garaje</h1>
           </div>
-          
+
           {/* Hero Section con StreetView prominente */}
           <div className="relative rounded-lg overflow-hidden mb-4">
             <StreetView
@@ -71,9 +71,7 @@ const ParkingDetailPage = () => {
               <div className="lg:col-span-2 space-y-6">
                 {/* Información básica del garaje */}
                 <div className="bg-white rounded-lg border p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                    Información del garaje
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Información del garaje</h2>
 
                   {/* Características */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -81,7 +79,9 @@ const ParkingDetailPage = () => {
                       <i className="pi pi-home text-3xl text-blue-500 mb-2 block"></i>
                       <p className="text-sm font-medium text-gray-800">Dimensiones</p>
                       <div className="text-sm text-gray-600 mt-1">
-                        <p>{parking.length}m × {parking.width}m × {parking.height}m</p>
+                        <p>
+                          {parking.length}m × {parking.width}m × {parking.height}m
+                        </p>
                       </div>
                     </div>
                     <div className="text-center">
@@ -102,9 +102,7 @@ const ParkingDetailPage = () => {
 
                   {/* Descripción */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      Descripción
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción</h3>
                     <div className="text-gray-700 prose prose-sm max-w-none">
                       <Markdown>{parking.description}</Markdown>
                     </div>
@@ -119,10 +117,8 @@ const ParkingDetailPage = () => {
               <div className="space-y-6">
                 {/* Información del propietario */}
                 <div className="bg-white rounded-lg border p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Propietario
-                  </h3>
-                  <OwnerInfo 
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Propietario</h3>
+                  <OwnerInfo
                     userInfo={parking.userInfo}
                     size="medium"
                     layout="vertical"
@@ -140,7 +136,7 @@ const ParkingDetailPage = () => {
                       </p>
                       <p className="text-sm text-gray-600">por hora</p>
                     </div>
-                    
+
                     <Button
                       onClick={handleGoToReservation}
                       disabled={isOwner}
@@ -163,9 +159,7 @@ const ParkingDetailPage = () => {
                 {/* Información de contacto */}
                 {parking.phone && (
                   <div className="bg-white rounded-lg border p-6">
-                    <h4 className="font-semibold text-gray-800 mb-3">
-                      Contacto
-                    </h4>
+                    <h4 className="font-semibold text-gray-800 mb-3">Contacto</h4>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <i className="pi pi-phone" />
                       <span>{parking.phone}</span>

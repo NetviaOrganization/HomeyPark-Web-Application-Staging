@@ -2,8 +2,11 @@ import BaseService from '@/shared/services/BaseService'
 import { CreateParkingDto, Parking, UpdateParkingDto } from '../model/parking'
 
 class ParkingService extends BaseService<Parking> {
+  private rootUrl: string
+
   constructor() {
     super()
+    this.rootUrl = this.baseUrl
     this.baseUrl = `${this.baseUrl}/parking`
   }
 
@@ -65,6 +68,20 @@ class ParkingService extends BaseService<Parking> {
     } catch (err) {
       console.error('Error deleting data:', err)
       throw err
+    }
+  }
+
+  public async publishReview(
+    rating: number,
+    comment: string,
+    parkingId: number,
+    userId: number
+  ): Promise<void> {
+    try {
+      await this.http.post(`${this.rootUrl}/reviews`, { rating, comment, parkingId, userId })
+    } catch (error) {
+      console.error('Error publishing review:', error)
+      throw error
     }
   }
 }
