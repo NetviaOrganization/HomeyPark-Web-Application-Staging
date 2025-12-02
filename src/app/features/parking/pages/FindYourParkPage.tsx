@@ -1,7 +1,7 @@
 import { AdvancedMarker, Map, useMap } from '@vis.gl/react-google-maps'
 import { useGeolocation } from '../../../../shared/hooks/useGeolocation'
 import { usePromise } from '@/shared/hooks/usePromise'
-import ParkingService from '../services/parkingService'
+import ParkingService from '../services/ParkingService'
 import { useNavigate } from 'react-router'
 import NearbyParkings from '../components/NearbyParkings'
 import ParkingSummaryAside from '../components/ParkingSummaryAside'
