@@ -1,5 +1,5 @@
 import { usePromise } from '@/shared/hooks/usePromise'
-import ParkingService from '../services/parkingService'
+import ParkingService from '../services/ParkingService'
 import { FC } from 'react'
 import ParkingSummary from './ParkingSummary'
 import { Parking } from '../model/parking'

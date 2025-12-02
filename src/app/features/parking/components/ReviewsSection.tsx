@@ -7,7 +7,7 @@ import { Rating } from 'primereact/rating'
 import { Review } from '../model/review'
 import { useAuthState } from '@/shared/hooks/useAuth'
 import { useAppStore } from '@/app/store/store'
-import ParkingService from '../services/parkingService'
+import ParkingService from '../services/ParkingService'
 
 interface Props {
   parkingId: number

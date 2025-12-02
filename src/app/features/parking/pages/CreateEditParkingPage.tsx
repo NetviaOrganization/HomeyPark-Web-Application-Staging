@@ -3,7 +3,7 @@ import { Map, Marker, useApiIsLoaded, useMap } from '@vis.gl/react-google-maps'
 
 import { useNavigate, useParams } from 'react-router'
 import { Parking, UpdateParkingDto } from '../model/parking'
-import ParkingService from '../services/parkingService'
+import ParkingService from '../services/ParkingService'
 import { usePromise } from '@/shared/hooks/usePromise'
 import { Controller, useForm } from 'react-hook-form'
 import Title from '@/shared/components/Title'

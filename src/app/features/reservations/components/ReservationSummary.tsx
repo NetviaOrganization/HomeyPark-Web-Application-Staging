@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from 'react'
 import { Reservation } from '../model/reservation'
 import { Parking } from '../../parking/model/parking'
 import { Nullable } from 'primereact/ts-helpers'
-import ParkingService from '../../parking/services/parkingService'
+import ParkingService from '../../parking/services/ParkingService'
 import { Card } from 'primereact/card'
 import BadgeStatus from './BadgeStatus'
 

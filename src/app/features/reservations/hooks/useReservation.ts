@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Reservation } from '../model/reservation'
 import { Nullable } from 'primereact/ts-helpers'
 import { Parking } from '../../parking/model/parking'
-import ParkingService from '../../parking/services/parkingService'
+import ParkingService from '../../parking/services/ParkingService'
 import ReservationService from '../services/reservationService'
 
 const parkingService = new ParkingService()
